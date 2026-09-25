@@ -50,7 +50,11 @@ export default defineContentScript({
         void browser.runtime
           .sendMessage({ type: "visit", context: state.context })
           .catch(() => undefined);
-      }, 1500);
+        // DEMO BUILD: raised from 1500 ms to 4000 ms. Ad frameworks (Actirise,
+        // Prebid, Teads) inject their slots by script AFTER the page is idle:
+        // on marmiton.org the initial HTML contains no ad container at all, so an
+        // early analysis finds nothing to hide. Still bounded to one call per key.
+      }, 4000);
     };
     const sync = async () => {
       const version = ++revision;
