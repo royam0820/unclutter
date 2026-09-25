@@ -8,7 +8,13 @@
 import { readFileSync } from "node:fs";
 import { JSDOM } from "jsdom";
 import { collectCandidates } from "../lib/dom";
-import { evaluationCall, evaluationRequest, OPENROUTER_MODEL } from "../lib/jev";
+import {
+  evaluationCall,
+  evaluationRequest,
+  MIN_CONFIDENCE,
+  MIN_PROBABILITY,
+  OPENROUTER_MODEL,
+} from "../lib/jev";
 import type { Snapshot } from "../lib/model";
 import { pageContext } from "../lib/page-context";
 import { providerLabel, smokeCredentials } from "../lib/providers";
@@ -43,7 +49,9 @@ const lines = candidates.map((candidate) => {
   const confidence = answer?.confidence;
   const labelled = choice !== "keep" && choice !== "uncertain";
   const gated =
-    labelled && (probability ?? 0) >= 0.9 && (confidence ?? 1) >= 0.9 ? "MASQUÉ" : "visible";
+    labelled && (probability ?? 0) >= MIN_PROBABILITY && (confidence ?? 1) >= MIN_CONFIDENCE
+      ? "MASQUÉ"
+      : "visible";
   if (gated === "MASQUÉ") masked += 1;
   const p = probability === undefined ? "  —  " : probability.toFixed(2);
   const c = confidence === undefined ? " — " : confidence.toFixed(2);
@@ -53,6 +61,6 @@ const lines = candidates.map((candidate) => {
 console.log(
   `${candidates.length} candidats · ${masked} masqués · ${elapsed} ms · ${providerLabel(provider)}` +
     `${provider === "openrouter" ? ` (${OPENROUTER_MODEL})` : ""}\n` +
-    `snapshot: ${JSON.stringify(evaluationRequest(snapshot)).length} caractères envoyés\n` +
+    `seuils: p>=${MIN_PROBABILITY} conf>=${MIN_CONFIDENCE} · snapshot ${JSON.stringify(evaluationRequest(snapshot)).length} caractères\n` +
     lines.join("\n"),
 );

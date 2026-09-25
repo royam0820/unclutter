@@ -2,7 +2,7 @@ import assert from "node:assert/strict";
 import test from "node:test";
 import { JSDOM } from "jsdom";
 import { collectCandidates, createCleaner, matchingElements } from "../lib/dom";
-import { evaluationRequest, rulesFromAnswers } from "../lib/jev";
+import { evaluationRequest, MIN_PROBABILITY, rulesFromAnswers } from "../lib/jev";
 import { pageContext } from "../lib/page-context";
 
 const doc = (html: string) => new JSDOM(html, { url: "https://www.bbc.com" }).window.document;
@@ -141,7 +141,11 @@ test("Jev validation rejects incomplete, invalid and nonfinite results; uncertai
   );
   assert.deepEqual(
     rulesFromAnswers(
-      { answers: { e0: { type: "choice", choice: "ad", probabilities: { ad: 0.7 } } } },
+      {
+        answers: {
+          e0: { type: "choice", choice: "ad", probabilities: { ad: MIN_PROBABILITY - 0.01 } },
+        },
+      },
       candidates,
     ),
     [],

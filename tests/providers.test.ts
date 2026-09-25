@@ -2,6 +2,8 @@ import assert from "node:assert/strict";
 import test from "node:test";
 import {
   ENDPOINT,
+  MIN_CONFIDENCE,
+  MIN_PROBABILITY,
   OPENROUTER_ENDPOINT,
   OPENROUTER_MODEL,
   TYPESAFE_ENDPOINT,
@@ -104,9 +106,12 @@ test("OpenRouter construction targets the decisions endpoint with the Jev slug a
 
 test("TypeSafe response ignores top-level metadata and enforces BOTH supplied confidence gates", () => {
   assert.equal(rulesFromAnswers(result(), snapshot.candidates).length, 1);
-  assert.equal(rulesFromAnswers(result(0.9, 0.9), snapshot.candidates).length, 1);
-  assert.deepEqual(rulesFromAnswers(result(0.89, 0.99), snapshot.candidates), []);
-  assert.deepEqual(rulesFromAnswers(result(0.99, 0.89), snapshot.candidates), []);
+  assert.equal(
+    rulesFromAnswers(result(MIN_CONFIDENCE, MIN_PROBABILITY), snapshot.candidates).length,
+    1,
+  );
+  assert.deepEqual(rulesFromAnswers(result(MIN_CONFIDENCE - 0.01, 0.99), snapshot.candidates), []);
+  assert.deepEqual(rulesFromAnswers(result(0.99, MIN_PROBABILITY - 0.01), snapshot.candidates), []);
   for (const confidence of [NaN, Infinity, -0.1, 1.1])
     assert.throws(() => rulesFromAnswers(result(confidence), snapshot.candidates));
   const noConfidence = {

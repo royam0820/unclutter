@@ -10,12 +10,20 @@ export const OPENROUTER_ENDPOINT = "https://openrouter.ai/api/alpha/decisions";
 export const OPENROUTER_MODEL = "typesafe/jev-1.13";
 
 // Conservative operational cutoffs, not a claim of calibrated accuracy.
-// Both gates are applied together. They are deliberately tunable: for a live
-// demo where Jev's own confidence lands in the 0.80-0.90 band, lowering both to
-// 0.8 masks noticeably more elements without letting the model act on a coin flip.
-// Measured on demo/fixture_fr.html: 0.9/0.9 -> 2 masked, 0.8/0.8 -> 4 masked.
-export const MIN_PROBABILITY = 0.9;
-export const MIN_CONFIDENCE = 0.9;
+// Both gates are applied together.
+//
+// DEMO BUILD (branch demo/impressive-filter): lowered from 0.9 to 0.7 on purpose.
+// Jev's confidence closely tracks its probability, so the 0.9 pair is effectively
+// redundant and cuts off the 0.7-0.90 band where most real detections land.
+// Measured on demo/fixture_fr.html (6 candidates, 3 runs):
+//   0.9  -> 2 masked
+//   0.8  -> 4 masked
+//   0.75 -> 5 masked (tightest confidence 0.78 vs 0.75: only 3 points of margin)
+//   0.7  -> 5 masked (tightest confidence ~0.78: ~8 points of margin)
+// The kept element is kept because Jev calls it "keep", not because of the cutoff.
+// More aggressive = more false positives on real sites: use 0.9 outside a demo.
+export const MIN_PROBABILITY = 0.7;
+export const MIN_CONFIDENCE = 0.7;
 const answerSchema = z.object({
   type: z.literal("choice"),
   choice: z.enum(categories),
